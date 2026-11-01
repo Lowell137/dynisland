@@ -1,6 +1,6 @@
 {
   "productName": "DynIsland",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "app.dynisland.island",
   "build": { "frontendDist": "../src" },
   "app": {

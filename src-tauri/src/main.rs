@@ -552,6 +552,23 @@ fn set_autostart(enable: bool) -> bool {
     cmd.creation_flags(CREATE_NO_WINDOW).status().map(|s| s.success()).unwrap_or(false)
 }
 
+// The exe path registered to start with Windows, if any. The registry is the truth: the installer writes it too.
+fn autostart_path() -> Option<String> {
+    let out = Command::new("reg")
+        .args(["query", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "DynIsland"])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .ok()?;
+    let text = String::from_utf8_lossy(&out.stdout).to_string();
+    let line = text.lines().find(|l| l.contains("REG_SZ"))?;
+    Some(line.split("REG_SZ").nth(1)?.trim().trim_matches('"').to_string())
+}
+
+#[tauri::command]
+async fn get_autostart() -> bool {
+    autostart_path().is_some()
+}
+
 #[tauri::command]
 fn start_drag(window: WebviewWindow, path: String) {
     let w = window.clone();
@@ -1322,7 +1339,7 @@ fn main() {
             gpu: None,
         })))
         .invoke_handler(tauri::generate_handler![
-            sys_stats, lyrics, translate, start_notifs, list_apps, clip_pin_image, clip_preview, open_url, set_hotkey, nav_keys, take_focus, release_focus, open_link, set_hot_zone,
+            sys_stats, lyrics, translate, start_notifs, list_apps, clip_pin_image, clip_preview, open_url, set_hotkey, nav_keys, take_focus, release_focus, open_link, set_hot_zone, get_autostart,
             clip_set_image, paste_text, paste_image,
             set_size, set_region, set_click_through, monitors, set_monitor, get_volume, set_volume, toggle_mute, set_visible, media_cmd,
             vol_key, clip_set, open_path, open_with, find_localsend, pick_exe, pick_files, file_thumb, get_location,
@@ -1413,6 +1430,13 @@ fn main() {
                     _ => {}
                 })
                 .build(app)?;
+
+            // the exe was moved since autostart was turned on: point it at this copy
+            thread::spawn(|| {
+                if autostart_path().is_some_and(|p| !PathBuf::from(p).exists()) {
+                    set_autostart(true);
+                }
+            });
 
             start_media_helper(app.handle().clone());
             start_clipboard_watcher(app.handle().clone());
