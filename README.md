@@ -8,7 +8,7 @@ The idea comes from [Skerry](https://github.com/Casellus/Skerry). DynIsland is a
 
 ## Install
 
-Download `DynIsland-Setup-0.1.1.exe` from [Releases](https://github.com/Lowell137/dynisland/releases) and run it. It installs for your user only and does not ask for admin rights. If you would rather not install anything, the same page has a standalone `dynisland.exe`.
+Download `DynIsland-Setup-0.1.2.exe` from [Releases](https://github.com/Lowell137/dynisland/releases) and run it. It installs for your user only and does not ask for admin rights. If you would rather not install anything, the same page has a standalone `dynisland.exe`.
 
 The app is not code signed, so Windows SmartScreen may warn you the first time. Choose "More info", then "Run anyway".
 

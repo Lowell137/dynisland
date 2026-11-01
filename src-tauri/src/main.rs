@@ -396,12 +396,48 @@ fn open_path(path: String) {
     let _ = Command::new("cmd").args(["/c", "start", "", &path]).creation_flags(CREATE_NO_WINDOW).spawn();
 }
 
+fn activate_for_files(aumid: &str, files: &[String]) -> bool {
+    use windows::core::{w, HSTRING};
+    use windows::Win32::System::Com::COINIT_APARTMENTTHREADED;
+    use windows::Win32::UI::Shell::{
+        ApplicationActivationManager, ACTIVATEOPTIONS, IApplicationActivationManager, IShellItem, IShellItemArray, SHCreateItemFromParsingName,
+        SHCreateShellItemArrayFromShellItem,
+    };
+    unsafe {
+        let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+        let run = || -> windows::core::Result<()> {
+            let mgr: IApplicationActivationManager = CoCreateInstance(&ApplicationActivationManager, None, CLSCTX_ALL)?;
+            let id = HSTRING::from(aumid);
+            let by_file = files.iter().try_for_each(|f| -> windows::core::Result<()> {
+                let item: IShellItem = SHCreateItemFromParsingName(&HSTRING::from(f.as_str()), None)?;
+                let items: IShellItemArray = SHCreateShellItemArrayFromShellItem(&item)?;
+                mgr.ActivateForFile(&id, &items, w!("open"))?;
+                Ok(())
+            });
+            if by_file.is_err() {
+                // packaged desktop apps such as Notepad refuse that call but read files from their arguments
+                let args = files.iter().map(|f| format!("\"{}\"", f)).collect::<Vec<_>>().join(" ");
+                mgr.ActivateApplication(&id, &HSTRING::from(args), ACTIVATEOPTIONS(0))?;
+            }
+            Ok(())
+        };
+        run().is_ok()
+    }
+}
+
 /// Opens `files` with the program at `exe` (a .exe, or a .lnk shortcut which is launched through the shell).
 #[tauri::command]
 fn open_with(exe: String, files: Vec<String>) {
     let is_lnk = exe.to_lowercase().ends_with(".lnk");
     if exe.starts_with("shell:") {
-        let _ = Command::new("explorer.exe").arg(exe).spawn();
+        // a Store app has no exe to hand files to, so Windows activates it for them;
+        // one that doesn't take this file type still opens, just without the file
+        thread::spawn(move || {
+            let aumid = exe.rsplit('\\').next().unwrap_or("").to_string();
+            if files.is_empty() || !activate_for_files(&aumid, &files) {
+                let _ = Command::new("explorer.exe").arg(&exe).spawn();
+            }
+        });
     } else if is_lnk {
         let mut args = vec!["/c".to_string(), "start".to_string(), String::new(), exe];
         args.extend(files);
@@ -567,6 +603,16 @@ fn autostart_path() -> Option<String> {
 #[tauri::command]
 async fn get_autostart() -> bool {
     autostart_path().is_some()
+}
+
+/// Where the cursor is inside the window, in physical pixels. Drag events can arrive late and out of
+/// order (a drag started from this window blocks its event loop), so a drop asks for the real position.
+#[tauri::command]
+fn cursor_in_window(w: WebviewWindow) -> Option<(f64, f64)> {
+    let pos = w.inner_position().ok()?;
+    let mut p = POINT::default();
+    unsafe { GetCursorPos(&mut p) }.ok()?;
+    Some(((p.x - pos.x) as f64, (p.y - pos.y) as f64))
 }
 
 #[tauri::command]
@@ -1339,7 +1385,7 @@ fn main() {
             gpu: None,
         })))
         .invoke_handler(tauri::generate_handler![
-            sys_stats, lyrics, translate, start_notifs, list_apps, clip_pin_image, clip_preview, open_url, set_hotkey, nav_keys, take_focus, release_focus, open_link, set_hot_zone, get_autostart,
+            sys_stats, lyrics, translate, start_notifs, list_apps, clip_pin_image, clip_preview, open_url, set_hotkey, nav_keys, take_focus, release_focus, open_link, set_hot_zone, get_autostart, cursor_in_window,
             clip_set_image, paste_text, paste_image,
             set_size, set_region, set_click_through, monitors, set_monitor, get_volume, set_volume, toggle_mute, set_visible, media_cmd,
             vol_key, clip_set, open_path, open_with, find_localsend, pick_exe, pick_files, file_thumb, get_location,

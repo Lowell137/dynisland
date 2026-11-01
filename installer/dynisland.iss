@@ -1,5 +1,5 @@
 ; Build the release exe first: cargo build --release (CARGO_TARGET_DIR=C:\dyn-target), then compile this with ISCC.
-#define AppVersion "0.1.1"
+#define AppVersion "0.1.2"
 #define BuildDir "C:\dyn-target\release"
 
 [Setup]

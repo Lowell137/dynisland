@@ -740,10 +740,14 @@ listen('tauri://drag-over', ({ payload }) => {
   document.querySelectorAll('.qtile').forEach((q) => q.classList.toggle('over', !!el && q.contains(el)))
   $('files').classList.toggle('over', !!el && !!el.closest('#files'))
 })
-listen('tauri://drag-drop', ({ payload }) => {
-  const tile = document.querySelector('.qtile.over')
+listen('tauri://drag-drop', async ({ payload }) => {
+  // drag events can come late or out of order, so the target is taken from where the cursor really is
+  const pt = await invoke('cursor_in_window').catch(() => null), s = window.devicePixelRatio
+  const el = pt && document.elementFromPoint(pt[0] / s, pt[1] / s)
+  const tile = el && el.closest('.qtile')
   dragging = false
-  document.querySelectorAll('.over').forEach((e) => e.classList.remove('over'))
+  const clearOver = () => document.querySelectorAll('.over').forEach((e) => e.classList.remove('over'))
+  clearOver(); setTimeout(clearOver, 400)
   if (tile) { invoke('open_with', { exe: tile.dataset.path, files: payload.paths }); notify(`${T('n_sent')} ${tile.querySelector('span').textContent}`) }
   else addFiles(payload.paths)
 })

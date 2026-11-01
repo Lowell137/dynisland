@@ -199,7 +199,7 @@ function pageEl(p) {
   const f = document.createDocumentFragment()
   f.appendChild(el('h1', null, `<span class="ico" style="background:${p.color}">${p.icon}</span>${T('p_' + p.id)}`))
   if (p.custom === 'about') {
-    const hero = el('div', 'card hero', `<div class="logo"><i></i><i></i></div><div><b>DynIsland</b><span>${T('s_version')} 0.1.1</span><span>${T('ab_tag')}</span></div>`)
+    const hero = el('div', 'card hero', `<div class="logo"><i></i><i></i></div><div><b>DynIsland</b><span>${T('s_version')} 0.1.2</span><span>${T('ab_tag')}</span></div>`)
     f.appendChild(hero)
   }
   if (p.preview) { const pv = el('div', 'preview', '<div class="pi"><i></i><em>···</em></div><small>Preview</small>'); f.appendChild(pv) }
@@ -231,7 +231,7 @@ function render() {
   }
   const c = $('content'); c.innerHTML = ''
   c.appendChild(q ? searchEl(q) : pageEl(pages().find((p) => p.id === current)))
-  $('q').placeholder = T('s_search'); $('ver').textContent = `${T('s_version')} 0.1.1`
+  $('q').placeholder = T('s_search'); $('ver').textContent = `${T('s_version')} 0.1.2`
   document.title = 'DynIsland — ' + T('p_' + current)
   drawPreview()
 }
