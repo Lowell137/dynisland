@@ -1,0 +1,16 @@
+.apk { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; gap: 8px; background: #0b0b0b; border-radius: 12px; padding: 6px; color: #fff; font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif; }
+.apkHead { display: flex; gap: 6px; flex: none; }
+.apkQ { flex: 1; min-width: 0; height: 28px; padding: 0 12px; border-radius: 14px; border: 1px solid #2a2a2a; background: #151515; color: #fff; font: inherit; font-size: 12px; outline: none; user-select: text; -webkit-user-select: text; }
+.apkQ:focus { border-color: #5a5a5a; }
+.apkBrowse, .apkClose { height: 28px; border: 0; border-radius: 14px; background: #242424; color: #ddd; font: inherit; font-size: 12px; cursor: pointer; flex: none; }
+.apkBrowse { padding: 0 12px; }
+.apkClose { width: 28px; font-size: 16px; line-height: 1; }
+.apkBrowse:hover, .apkClose:hover { background: #333; color: #fff; }
+.apkGrid { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); grid-auto-rows: 72px; gap: 4px; }
+.apkGrid::-webkit-scrollbar { width: 6px; }
+.apkGrid::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 3px; }
+.apkApp { min-width: 0; border: 0; border-radius: 10px; background: transparent; color: #cfcfcf; font: inherit; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 4px; }
+.apkApp:hover { background: #1e1e1e; color: #fff; }
+.apkApp img { width: 34px; height: 34px; object-fit: contain; }
+.apkApp span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apkMsg { grid-column: 1 / -1; align-self: center; text-align: center; color: #777; font-size: 12px; }
